@@ -1,0 +1,127 @@
+# MI Survey Polish Translation
+# Copyright (C) 2024 PNA
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: MI Survey 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Last-Translator: PNA\n"
+"Language-Team: Polish\n"
+"Language: pl_PL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+msgid "MI Survey"
+msgstr "Ankieta MI"
+
+msgid "Results"
+msgstr "Wyniki"
+
+msgid "Settings"
+msgstr "Ustawienia"
+
+msgid "Result Not Found"
+msgstr "Nie znaleziono wyniku"
+
+msgid "Survey Result Detail"
+msgstr "Szczegóły wyniku ankiety"
+
+msgid "Back to Results"
+msgstr "Powrót do wyników"
+
+msgid "Name"
+msgstr "Imię"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Language"
+msgstr "Język"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Items Checked"
+msgstr "Zaznaczone elementy"
+
+msgid "Scores"
+msgstr "Wyniki"
+
+msgid "Checked Answers"
+msgstr "Zaznaczone odpowiedzi"
+
+msgid "MI Survey Results"
+msgstr "Wyniki ankiety MI"
+
+msgid "Export CSV"
+msgstr "Eksport CSV"
+
+msgid "No results yet."
+msgstr "Brak wyników."
+
+msgid "Top 3 Intelligences"
+msgstr "Top 3 inteligencje"
+
+msgid "Actions"
+msgstr "Akcje"
+
+msgid "View"
+msgstr "Zobacz"
+
+msgid "Delete"
+msgstr "Usuń"
+
+msgid "Delete this result?"
+msgstr "Usunąć ten wynik?"
+
+msgid "MI Survey Settings"
+msgstr "Ustawienia ankiety MI"
+
+msgid "GDPR Consent Text (EN)"
+msgstr "Tekst zgody RODO (EN)"
+
+msgid "GDPR Consent Text (PL)"
+msgstr "Tekst zgody RODO (PL)"
+
+msgid "Save Settings"
+msgstr "Zapisz ustawienia"
+
+msgid "Settings saved."
+msgstr "Ustawienia zapisane."
+
+msgid "Please fill in all required fields."
+msgstr "Proszę wypełnić wszystkie wymagane pola."
+
+msgid "Please accept the consent checkbox."
+msgstr "Proszę zaakceptować zgodę na przetwarzanie danych."
+
+msgid "An error occurred. Please try again."
+msgstr "Wystąpił błąd. Spróbuj ponownie."
+
+msgid "Report sent to your email!"
+msgstr "Raport wysłany na Twój email!"
+
+msgid "Failed to send email. Please try again."
+msgstr "Nie udało się wysłać emaila. Spróbuj ponownie."
+
+msgid "checked"
+msgstr "zaznaczono"
+
+msgid "Download PDF"
+msgstr "Pobierz PDF"
+
+msgid "Send to email"
+msgstr "Wyślij na email"
+
+msgid "Generating PDF..."
+msgstr "Generowanie PDF..."
+
+msgid "Invalid input."
+msgstr "Nieprawidłowe dane."
+
+msgid "Failed to send email."
+msgstr "Nie udało się wysłać emaila."
