@@ -312,25 +312,121 @@
         });
     });
 
-    // Download PDF.
+    // Download PDF — jsPDF + html2canvas, fully rasterised, no external URLs.
     $(document).on('click', '#mi-download-pdf', function() {
         var btn = $(this);
         var origText = btn.text();
         btn.prop('disabled', true).text(state.lang === 'pl' ? 'Generowanie PDF...' : 'Generating PDF...');
 
-        var element = document.getElementById('mi-report');
-        var opt = {
-            margin:       [10, 10, 10, 10],
-            filename:     'MI-Survey-Report.pdf',
-            image:        { type: 'jpeg', quality: 0.95 },
-            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:    { mode: 'avoid-all' }
-        };
+        var source = document.getElementById('mi-report');
 
-        html2pdf().set(opt).from(element).save().then(function() {
+        // Clone the report so we can strip URLs without affecting the live page.
+        var clone = source.cloneNode(true);
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px';
+        clone.style.top = '0';
+        clone.style.width = source.offsetWidth + 'px';
+        clone.style.background = '#ffffff';
+
+        // Replace all <img> tags with already-loaded image data or remove them.
+        // Icons are already loaded in the browser — draw them to inline data URIs.
+        var imgs = clone.querySelectorAll('img');
+        for (var i = 0; i < imgs.length; i++) {
+            try {
+                var img = imgs[i];
+                var origImg = source.querySelectorAll('img')[i];
+                if (origImg && origImg.complete && origImg.naturalWidth > 0) {
+                    var c = document.createElement('canvas');
+                    c.width = origImg.naturalWidth || 40;
+                    c.height = origImg.naturalHeight || 40;
+                    var cx = c.getContext('2d');
+                    cx.drawImage(origImg, 0, 0, c.width, c.height);
+                    img.src = c.toDataURL('image/png');
+                } else {
+                    img.parentNode.removeChild(img);
+                }
+            } catch (e) {
+                // CORS or tainted canvas — remove the image entirely.
+                imgs[i].parentNode.removeChild(imgs[i]);
+            }
+        }
+
+        // Strip any remaining anchor hrefs.
+        var links = clone.querySelectorAll('a[href]');
+        for (var j = 0; j < links.length; j++) {
+            links[j].removeAttribute('href');
+        }
+
+        document.body.appendChild(clone);
+
+        html2canvas(clone, {
+            scale: 2,
+            useCORS: false,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false
+        }).then(function(canvas) {
+            document.body.removeChild(clone);
+
+            var imgData = canvas.toDataURL('image/jpeg', 0.95);
+            var pdf = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Set metadata to avoid AV false positives.
+            pdf.setProperties({
+                title: 'MI Survey Report',
+                author: 'polecanynauczycielangielskiego.pl',
+                creator: 'MI Survey Plugin',
+                subject: 'Multiple Intelligences Profile'
+            });
+
+            var pageWidth = pdf.internal.pageSize.getWidth();
+            var pageHeight = pdf.internal.pageSize.getHeight();
+            var margin = 10;
+            var contentWidth = pageWidth - (margin * 2);
+            var imgAspect = canvas.height / canvas.width;
+            var imgHeight = contentWidth * imgAspect;
+
+            // If the image is taller than one page, split across pages.
+            var yOffset = 0;
+            var availableHeight = pageHeight - (margin * 2);
+
+            if (imgHeight <= availableHeight) {
+                pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, imgHeight);
+            } else {
+                // Render across multiple pages by slicing the canvas.
+                var pxPerMm = canvas.width / contentWidth;
+                var sliceHeightPx = Math.floor(availableHeight * pxPerMm);
+                var pages = Math.ceil(canvas.height / sliceHeightPx);
+
+                for (var p = 0; p < pages; p++) {
+                    if (p > 0) {
+                        pdf.addPage();
+                    }
+                    var srcY = p * sliceHeightPx;
+                    var srcH = Math.min(sliceHeightPx, canvas.height - srcY);
+
+                    var sliceCanvas = document.createElement('canvas');
+                    sliceCanvas.width = canvas.width;
+                    sliceCanvas.height = srcH;
+                    var sliceCtx = sliceCanvas.getContext('2d');
+                    sliceCtx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+                    var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+                    var sliceH = (srcH / pxPerMm);
+                    pdf.addImage(sliceData, 'JPEG', margin, margin, contentWidth, sliceH);
+                }
+            }
+
+            pdf.save('MI-Survey-Report.pdf');
             btn.prop('disabled', false).text(origText);
         }).catch(function() {
+            if (clone.parentNode) {
+                document.body.removeChild(clone);
+            }
             btn.prop('disabled', false).text(origText);
         });
     });

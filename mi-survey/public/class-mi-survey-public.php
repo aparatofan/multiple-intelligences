@@ -20,16 +20,23 @@ class MI_Survey_Public {
             true
         );
         wp_enqueue_script(
-            'html2pdf',
-            'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+            'html2canvas',
+            'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
             array(),
-            '0.10.1',
+            '1.4.1',
+            true
+        );
+        wp_enqueue_script(
+            'jspdf',
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            array(),
+            '2.5.1',
             true
         );
         wp_enqueue_script(
             'mi-survey-public',
             MI_SURVEY_PLUGIN_URL . 'public/js/mi-survey-public.js',
-            array( 'jquery', 'chartjs', 'html2pdf' ),
+            array( 'jquery', 'chartjs', 'html2canvas', 'jspdf' ),
             MI_SURVEY_VERSION,
             true
         );
