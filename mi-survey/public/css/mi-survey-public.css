@@ -1,0 +1,380 @@
+/* MI Survey — Public Styles */
+
+.mi-survey-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Steps visibility */
+.mi-step {
+    display: none;
+}
+
+.mi-step.mi-step-active,
+.mi-step[style*="display: block"],
+.mi-step[style*="display:block"] {
+    display: block;
+}
+
+/* Typography */
+.mi-survey-title {
+    font-size: 1.8em;
+    color: #e8a317;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.mi-survey-subtitle {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Form styles */
+.mi-form {
+    margin: 0;
+}
+
+.mi-form-group {
+    margin-bottom: 20px;
+}
+
+.mi-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 0.95em;
+    color: #444;
+}
+
+.mi-form-group input[type="text"],
+.mi-form-group input[type="email"],
+.mi-form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.mi-form-group input[type="text"]:focus,
+.mi-form-group input[type="email"]:focus,
+.mi-form-group select:focus {
+    border-color: #e8a317;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(232, 163, 23, 0.15);
+}
+
+/* Consent checkbox */
+.mi-consent-group {
+    background: #fdf8ed;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #f0e0b2;
+}
+
+.mi-checkbox-label {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    font-weight: 400 !important;
+    cursor: pointer;
+}
+
+.mi-checkbox-label input[type="checkbox"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: #e8a317;
+}
+
+.mi-consent-text {
+    font-size: 0.9em;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* Error messages */
+.mi-form-error {
+    color: #d32f2f;
+    font-size: 0.9em;
+    margin: 10px 0;
+    min-height: 1.2em;
+}
+
+/* Buttons */
+.mi-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    font-size: 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    text-align: center;
+}
+
+.mi-btn:focus {
+    outline: 3px solid rgba(232, 163, 23, 0.5);
+    outline-offset: 2px;
+}
+
+.mi-btn-primary {
+    background-color: #e8a317;
+    color: #fff;
+}
+
+.mi-btn-primary:hover {
+    background-color: #d4920f;
+}
+
+.mi-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.mi-btn-secondary {
+    background-color: #fff;
+    color: #e8a317;
+    border: 2px solid #e8a317;
+}
+
+.mi-btn-secondary:hover {
+    background-color: #fdf8ed;
+}
+
+.mi-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Progress */
+.mi-progress {
+    background: #f5f5f5;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 0.95em;
+    color: #555;
+    margin-bottom: 24px;
+    text-align: center;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border: 1px solid #e0e0e0;
+}
+
+/* Questions */
+.mi-questions-container {
+    margin-bottom: 30px;
+}
+
+.mi-question-item {
+    padding: 14px 16px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.mi-question-item:hover {
+    background-color: #fdf8ed;
+}
+
+.mi-question-item.mi-checked {
+    background-color: #fdf3da;
+}
+
+.mi-question-item input[type="checkbox"] {
+    margin-top: 3px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: #e8a317;
+    cursor: pointer;
+}
+
+.mi-question-item label {
+    cursor: pointer;
+    font-size: 0.95em;
+    line-height: 1.5;
+    flex: 1;
+}
+
+/* Report */
+.mi-report {
+    margin-bottom: 30px;
+}
+
+.mi-report-title {
+    font-size: 1.6em;
+    color: #e8a317;
+    margin-bottom: 5px;
+}
+
+.mi-report-date {
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 25px;
+}
+
+.mi-chart-container {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.mi-chart-container canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 450px;
+}
+
+.mi-dynamic-note {
+    font-style: italic;
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Descriptions */
+.mi-descriptions {
+    margin-top: 10px;
+}
+
+.mi-description-item {
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #e8a317;
+    background: #fefcf6;
+}
+
+.mi-description-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mi-description-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.mi-description-title {
+    font-size: 1.15em;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+.mi-description-score {
+    color: #e8a317;
+    font-weight: 700;
+    font-size: 0.9em;
+}
+
+.mi-description-item p {
+    margin: 0 0 10px;
+    font-size: 0.95em;
+    line-height: 1.7;
+    color: #444;
+}
+
+.mi-description-item p:last-child {
+    margin-bottom: 0;
+}
+
+/* Report actions */
+.mi-report-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.mi-email-status {
+    font-size: 0.9em;
+    min-height: 1.2em;
+}
+
+.mi-email-status.mi-success {
+    color: #2e7d32;
+}
+
+.mi-email-status.mi-error {
+    color: #d32f2f;
+}
+
+/* Loading spinner */
+.mi-loading {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: mi-spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes mi-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .mi-survey-wrapper {
+        padding: 12px;
+    }
+
+    .mi-survey-title {
+        font-size: 1.4em;
+    }
+
+    .mi-btn {
+        width: 100%;
+        padding: 14px 20px;
+    }
+
+    .mi-report-actions {
+        flex-direction: column;
+    }
+
+    .mi-description-header {
+        flex-wrap: wrap;
+    }
+
+    .mi-chart-container {
+        padding: 10px;
+    }
+
+    .mi-question-item {
+        padding: 12px 10px;
+    }
+}
+
+/* Print styles for PDF */
+@media print {
+    .mi-report-actions,
+    .mi-email-status {
+        display: none !important;
+    }
+}

@@ -1,0 +1,39 @@
+.mi-survey-admin .mi-admin-results-table {
+    margin-top: 15px;
+}
+
+.mi-survey-admin .mi-admin-results-table th a {
+    text-decoration: none;
+    color: #23282d;
+}
+
+.mi-survey-admin .mi-admin-results-table th a:hover {
+    color: #e8a317;
+}
+
+.mi-survey-admin .mi-admin-detail table {
+    max-width: 600px;
+    margin-bottom: 20px;
+}
+
+.mi-survey-admin .mi-admin-detail th {
+    width: 120px;
+    text-align: left;
+}
+
+.mi-survey-admin .mi-admin-chart-wrap {
+    max-width: 700px;
+    margin: 15px 0 25px;
+    background: #fff;
+    padding: 15px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+}
+
+.mi-survey-admin .mi-delete-result {
+    color: #a00;
+}
+
+.mi-survey-admin .mi-delete-result:hover {
+    color: #dc3232;
+}
