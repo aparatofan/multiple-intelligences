@@ -322,31 +322,37 @@
 
         // Clone the report so we can strip URLs without affecting the live page.
         var clone = source.cloneNode(true);
+        clone.id = 'mi-report-pdf-clone';
         clone.style.position = 'absolute';
         clone.style.left = '-9999px';
         clone.style.top = '0';
         clone.style.width = source.offsetWidth + 'px';
         clone.style.background = '#ffffff';
 
-        // Replace all <img> tags with already-loaded image data or remove them.
-        // Icons are already loaded in the browser — draw them to inline data URIs.
-        var imgs = clone.querySelectorAll('img');
-        for (var i = 0; i < imgs.length; i++) {
+        // Convert the Chart.js <canvas> to a static <img> in the clone,
+        // because html2canvas cannot reliably capture other canvas elements.
+        var chartCanvas = source.querySelector('canvas');
+        var cloneCanvas = clone.querySelector('canvas');
+        if (chartCanvas && cloneCanvas) {
             try {
-                var img = imgs[i];
-                var origImg = source.querySelectorAll('img')[i];
-                if (origImg && origImg.complete && origImg.naturalWidth > 0) {
-                    var c = document.createElement('canvas');
-                    c.width = origImg.naturalWidth || 40;
-                    c.height = origImg.naturalHeight || 40;
-                    var cx = c.getContext('2d');
-                    cx.drawImage(origImg, 0, 0, c.width, c.height);
-                    img.src = c.toDataURL('image/png');
-                } else {
-                    img.parentNode.removeChild(img);
-                }
+                var chartImg = document.createElement('img');
+                chartImg.src = chartCanvas.toDataURL('image/png');
+                chartImg.style.width = '100%';
+                chartImg.style.height = 'auto';
+                cloneCanvas.parentNode.replaceChild(chartImg, cloneCanvas);
             } catch (e) {
-                // CORS or tainted canvas — remove the image entirely.
+                // leave the canvas as-is if toDataURL fails
+            }
+        }
+
+        // Remove all <img> that still point to external URLs.
+        // Cross-origin icons cannot be drawn to canvas (CORS taint) and cause
+        // html2canvas to hang. Iterate in reverse since the NodeList is live.
+        var imgs = clone.querySelectorAll('img');
+        for (var i = imgs.length - 1; i >= 0; i--) {
+            var imgSrc = imgs[i].getAttribute('src') || '';
+            // Keep only data-URI images (like the chart we just converted).
+            if (imgSrc.indexOf('data:') !== 0) {
                 imgs[i].parentNode.removeChild(imgs[i]);
             }
         }
@@ -359,14 +365,30 @@
 
         document.body.appendChild(clone);
 
+        // Safety timeout — if html2canvas takes longer than 15 seconds, abort.
+        var timedOut = false;
+        var timeout = setTimeout(function() {
+            timedOut = true;
+            if (clone.parentNode) {
+                document.body.removeChild(clone);
+            }
+            btn.prop('disabled', false).text(origText);
+        }, 15000);
+
         html2canvas(clone, {
             scale: 2,
             useCORS: false,
-            allowTaint: true,
+            allowTaint: false,
             backgroundColor: '#ffffff',
-            logging: false
+            logging: false,
+            imageTimeout: 0,
+            foreignObjectRendering: false
         }).then(function(canvas) {
-            document.body.removeChild(clone);
+            clearTimeout(timeout);
+            if (timedOut) return;
+            if (clone.parentNode) {
+                document.body.removeChild(clone);
+            }
 
             var imgData = canvas.toDataURL('image/jpeg', 0.95);
             var pdf = new jspdf.jsPDF({
@@ -389,9 +411,6 @@
             var contentWidth = pageWidth - (margin * 2);
             var imgAspect = canvas.height / canvas.width;
             var imgHeight = contentWidth * imgAspect;
-
-            // If the image is taller than one page, split across pages.
-            var yOffset = 0;
             var availableHeight = pageHeight - (margin * 2);
 
             if (imgHeight <= availableHeight) {
@@ -424,10 +443,13 @@
             pdf.save('MI-Survey-Report.pdf');
             btn.prop('disabled', false).text(origText);
         }).catch(function() {
-            if (clone.parentNode) {
-                document.body.removeChild(clone);
+            clearTimeout(timeout);
+            if (!timedOut) {
+                if (clone.parentNode) {
+                    document.body.removeChild(clone);
+                }
+                btn.prop('disabled', false).text(origText);
             }
-            btn.prop('disabled', false).text(origText);
         });
     });
 
