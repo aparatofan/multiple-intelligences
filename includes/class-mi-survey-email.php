@@ -32,22 +32,19 @@ class MI_Survey_Email {
      * Build the HTML email body.
      */
     private static function build_html( $name, $sorted_scores, $labels, $lang, $date ) {
-        $greeting = 'pl' === $lang
-            ? 'Cześć ' . esc_html( $name ) . ','
-            : 'Hello ' . esc_html( $name ) . ',';
+        $title = 'pl' === $lang
+            ? esc_html( $name ) . ', to jest twój Profil Inteligencji Wielorakich'
+            : esc_html( $name ) . ', this is your Profile of Multiple Intelligences';
 
-        $intro = 'pl' === $lang
-            ? 'Oto Twój profil inteligencji wielorakich z ankiety przeprowadzonej dnia ' . esc_html( $date ) . '.'
-            : 'Here is your Multiple Intelligences profile from the survey taken on ' . esc_html( $date ) . '.';
+        $date_label = 'pl' === $lang ? 'Data ankiety' : 'Survey date';
 
         $dynamic_note = 'pl' === $lang
             ? 'Profil MI jest dynamiczny. Zmienia się w czasie.'
             : 'The MI profile is dynamic. It changes over time.';
 
         $html  = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#333;">';
-        $html .= '<h2 style="color:#e8a317;">' . ( 'pl' === $lang ? 'Profil Inteligencji Wielorakich' : 'Multiple Intelligences Profile' ) . '</h2>';
-        $html .= '<p>' . $greeting . '</p>';
-        $html .= '<p>' . $intro . '</p>';
+        $html .= '<h2 style="color:#e8a317;font-size:24px;">' . $title . '</h2>';
+        $html .= '<p style="color:#888;font-size:14px;">' . esc_html( $date_label ) . ': ' . esc_html( $date ) . '</p>';
 
         // Table-based chart fallback for email clients.
         $html .= '<table style="width:100%;border-collapse:collapse;margin:20px 0;">';
@@ -68,20 +65,22 @@ class MI_Survey_Email {
         }
         $html .= '</table>';
 
-        $html .= '<p style="font-style:italic;color:#666;">' . esc_html( $dynamic_note ) . '</p>';
+        $html .= '<p style="font-style:italic;color:#888;font-size:14px;text-align:center;">' . esc_html( $dynamic_note ) . '</p>';
 
-        // Descriptions.
-        $html .= '<hr style="border:none;border-top:1px solid #ddd;margin:30px 0;">';
+        // Descriptions — styled to match browser layout.
         foreach ( $sorted_scores as $type => $score ) {
             $label       = isset( $labels[ $type ] ) ? $labels[ $type ] : $type;
             $description = MI_Survey_Descriptions::get_description( $type, $lang );
             $icon_url    = MI_Survey_Questions::get_icon_url( $type, 'png' );
 
-            $html .= '<div style="margin-bottom:25px;">';
-            $html .= '<h3 style="color:#e8a317;margin-bottom:8px;">';
-            $html .= '<img src="' . esc_url( $icon_url ) . '" alt="" width="24" height="24" style="vertical-align:middle;margin-right:8px;">';
-            $html .= esc_html( $label ) . ' (' . intval( $score ) . '/10)</h3>';
-            $html .= $description;
+            $html .= '<div style="margin-bottom:30px;padding:20px;border-left:4px solid #e8a317;background:#fefcf6;border-radius:8px;">';
+            $html .= '<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;"><tr>';
+            $html .= '<td style="vertical-align:middle;padding-right:12px;"><img src="' . esc_url( $icon_url ) . '" alt="" width="150" height="150" style="display:block;"></td>';
+            $html .= '<td style="vertical-align:middle;">';
+            $html .= '<div style="font-size:22px;font-weight:700;color:#E8A317;margin:0 0 4px 0;">' . esc_html( $label ) . '</div>';
+            $html .= '<div style="font-size:18px;font-weight:700;color:#e8a317;">' . intval( $score ) . ' / 10</div>';
+            $html .= '</td></tr></table>';
+            $html .= '<div style="font-size:15px;line-height:1.7;color:#444;">' . $description . '</div>';
             $html .= '</div>';
         }
 
