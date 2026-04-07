@@ -312,203 +312,130 @@
         });
     });
 
-    /**
-     * Load a PNG image and return a data URI via a Promise.
-     * Uses a fresh <img> with crossorigin="anonymous" to avoid CORS taint.
-     */
-    function loadPngAsDataUri(url, size) {
-        return new Promise(function(resolve) {
-            var img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                try {
-                    var c = document.createElement('canvas');
-                    c.width = size;
-                    c.height = size;
-                    c.getContext('2d').drawImage(img, 0, 0, size, size);
-                    resolve(c.toDataURL('image/png'));
-                } catch (e) {
-                    resolve(null);
-                }
-            };
-            img.onerror = function() {
-                resolve(null);
-            };
-            img.src = url;
-        });
-    }
-
     // Download PDF — jsPDF + html2canvas, fully rasterised, no external URLs.
     $(document).on('click', '#mi-download-pdf', function() {
         var btn = $(this);
         var origText = btn.text();
         btn.prop('disabled', true).text(state.lang === 'pl' ? 'Generowanie PDF...' : 'Generating PDF...');
 
-        // Pre-load all icon PNGs as data URIs before building the clone.
-        // SVGs don't render properly in html2canvas, so we always use the PNG versions.
-        var iconSlugs = ['language', 'logic', 'spatial', 'music', 'body', 'interpersonal', 'intrapersonal', 'nature'];
-        var pngBaseUrl = 'https://polecanynauczycielangielskiego.pl/wp-content/uploads/2026/04/MI_';
-        var iconPromises = {};
+        var source = document.getElementById('mi-report');
+        var clone = source.cloneNode(true);
+        clone.id = 'mi-report-pdf-clone';
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px';
+        clone.style.top = '0';
+        clone.style.width = source.offsetWidth + 'px';
+        clone.style.background = '#ffffff';
 
-        iconSlugs.forEach(function(slug) {
-            iconPromises[slug] = loadPngAsDataUri(pngBaseUrl + slug + '.png', 300);
-        });
+        // Convert the Chart.js <canvas> to a static <img>.
+        var chartCanvas = source.querySelector('canvas');
+        var cloneCanvas = clone.querySelector('canvas');
+        if (chartCanvas && cloneCanvas) {
+            try {
+                var chartImg = document.createElement('img');
+                chartImg.src = chartCanvas.toDataURL('image/png');
+                chartImg.style.width = '100%';
+                chartImg.style.height = 'auto';
+                cloneCanvas.parentNode.replaceChild(chartImg, cloneCanvas);
+            } catch (e) {}
+        }
 
-        // Build a map of SVG URL → slug for matching.
-        var svgToSlug = {};
-        iconSlugs.forEach(function(slug) {
-            // Match both .svg and _clean.svg variants.
-            svgToSlug[pngBaseUrl + slug + '.svg'] = slug;
-            if (slug === 'body') {
-                svgToSlug[pngBaseUrl + 'body_clean.svg'] = slug;
+        // Remove all icon images — html2canvas cannot render them reliably.
+        var imgs = clone.querySelectorAll('img.mi-description-icon');
+        for (var i = imgs.length - 1; i >= 0; i--) {
+            imgs[i].parentNode.removeChild(imgs[i]);
+        }
+
+        // Strip any remaining anchor hrefs.
+        var links = clone.querySelectorAll('a[href]');
+        for (var j = 0; j < links.length; j++) {
+            links[j].removeAttribute('href');
+        }
+
+        document.body.appendChild(clone);
+
+        // Safety timeout.
+        var timedOut = false;
+        var timeout = setTimeout(function() {
+            timedOut = true;
+            if (clone.parentNode) {
+                document.body.removeChild(clone);
             }
-            svgToSlug[pngBaseUrl + slug + '.png'] = slug;
-        });
+            btn.prop('disabled', false).text(origText);
+        }, 20000);
 
-        Promise.all(iconSlugs.map(function(slug) { return iconPromises[slug]; })).then(function(dataUris) {
-            // Build slug → dataUri map.
-            var iconDataMap = {};
-            iconSlugs.forEach(function(slug, idx) {
-                iconDataMap[slug] = dataUris[idx];
+        html2canvas(clone, {
+            scale: 2,
+            useCORS: false,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false,
+            imageTimeout: 0,
+            foreignObjectRendering: false
+        }).then(function(canvas) {
+            clearTimeout(timeout);
+            if (timedOut) return;
+            if (clone.parentNode) {
+                document.body.removeChild(clone);
+            }
+
+            var imgData = canvas.toDataURL('image/jpeg', 0.95);
+            var pdf = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
             });
 
-            var source = document.getElementById('mi-report');
-            var clone = source.cloneNode(true);
-            clone.id = 'mi-report-pdf-clone';
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            clone.style.top = '0';
-            clone.style.width = source.offsetWidth + 'px';
-            clone.style.background = '#ffffff';
+            pdf.setProperties({
+                title: 'MI Survey Report',
+                author: 'polecanynauczycielangielskiego.pl',
+                creator: 'MI Survey Plugin',
+                subject: 'Multiple Intelligences Profile'
+            });
 
-            // Convert the Chart.js <canvas> to a static <img>.
-            var chartCanvas = source.querySelector('canvas');
-            var cloneCanvas = clone.querySelector('canvas');
-            if (chartCanvas && cloneCanvas) {
-                try {
-                    var chartImg = document.createElement('img');
-                    chartImg.src = chartCanvas.toDataURL('image/png');
-                    chartImg.style.width = '100%';
-                    chartImg.style.height = 'auto';
-                    cloneCanvas.parentNode.replaceChild(chartImg, cloneCanvas);
-                } catch (e) {}
-            }
+            var pageWidth = pdf.internal.pageSize.getWidth();
+            var pageHeight = pdf.internal.pageSize.getHeight();
+            var margin = 10;
+            var contentWidth = pageWidth - (margin * 2);
+            var imgAspect = canvas.height / canvas.width;
+            var imgHeight = contentWidth * imgAspect;
+            var availableHeight = pageHeight - (margin * 2);
 
-            // Replace icon images with pre-loaded PNG data URIs.
-            var imgs = clone.querySelectorAll('img.mi-description-icon');
-            for (var i = 0; i < imgs.length; i++) {
-                var imgSrc = imgs[i].getAttribute('src') || '';
-                var matched = false;
-                for (var url in svgToSlug) {
-                    if (imgSrc === url) {
-                        var dataUri = iconDataMap[svgToSlug[url]];
-                        if (dataUri) {
-                            imgs[i].src = dataUri;
-                            imgs[i].style.width = '150px';
-                            imgs[i].style.height = '150px';
-                            imgs[i].removeAttribute('loading');
-                            imgs[i].removeAttribute('crossorigin');
-                            matched = true;
-                        }
-                        break;
+            if (imgHeight <= availableHeight) {
+                pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, imgHeight);
+            } else {
+                var pxPerMm = canvas.width / contentWidth;
+                var sliceHeightPx = Math.floor(availableHeight * pxPerMm);
+                var pages = Math.ceil(canvas.height / sliceHeightPx);
+
+                for (var p = 0; p < pages; p++) {
+                    if (p > 0) {
+                        pdf.addPage();
                     }
-                }
-                if (!matched) {
-                    imgs[i].parentNode.removeChild(imgs[i]);
+                    var srcY = p * sliceHeightPx;
+                    var srcH = Math.min(sliceHeightPx, canvas.height - srcY);
+
+                    var sliceCanvas = document.createElement('canvas');
+                    sliceCanvas.width = canvas.width;
+                    sliceCanvas.height = srcH;
+                    sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+                    var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+                    var sliceH = (srcH / pxPerMm);
+                    pdf.addImage(sliceData, 'JPEG', margin, margin, contentWidth, sliceH);
                 }
             }
 
-            // Strip any remaining anchor hrefs.
-            var links = clone.querySelectorAll('a[href]');
-            for (var j = 0; j < links.length; j++) {
-                links[j].removeAttribute('href');
-            }
-
-            document.body.appendChild(clone);
-
-            // Safety timeout.
-            var timedOut = false;
-            var timeout = setTimeout(function() {
-                timedOut = true;
+            pdf.save('MI-Survey-Report.pdf');
+            btn.prop('disabled', false).text(origText);
+        }).catch(function() {
+            clearTimeout(timeout);
+            if (!timedOut) {
                 if (clone.parentNode) {
                     document.body.removeChild(clone);
                 }
                 btn.prop('disabled', false).text(origText);
-            }, 20000);
-
-            html2canvas(clone, {
-                scale: 2,
-                useCORS: false,
-                allowTaint: false,
-                backgroundColor: '#ffffff',
-                logging: false,
-                imageTimeout: 0,
-                foreignObjectRendering: false
-            }).then(function(canvas) {
-                clearTimeout(timeout);
-                if (timedOut) return;
-                if (clone.parentNode) {
-                    document.body.removeChild(clone);
-                }
-
-                var imgData = canvas.toDataURL('image/jpeg', 0.95);
-                var pdf = new jspdf.jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-
-                pdf.setProperties({
-                    title: 'MI Survey Report',
-                    author: 'polecanynauczycielangielskiego.pl',
-                    creator: 'MI Survey Plugin',
-                    subject: 'Multiple Intelligences Profile'
-                });
-
-                var pageWidth = pdf.internal.pageSize.getWidth();
-                var pageHeight = pdf.internal.pageSize.getHeight();
-                var margin = 10;
-                var contentWidth = pageWidth - (margin * 2);
-                var imgAspect = canvas.height / canvas.width;
-                var imgHeight = contentWidth * imgAspect;
-                var availableHeight = pageHeight - (margin * 2);
-
-                if (imgHeight <= availableHeight) {
-                    pdf.addImage(imgData, 'JPEG', margin, margin, contentWidth, imgHeight);
-                } else {
-                    var pxPerMm = canvas.width / contentWidth;
-                    var sliceHeightPx = Math.floor(availableHeight * pxPerMm);
-                    var pages = Math.ceil(canvas.height / sliceHeightPx);
-
-                    for (var p = 0; p < pages; p++) {
-                        if (p > 0) {
-                            pdf.addPage();
-                        }
-                        var srcY = p * sliceHeightPx;
-                        var srcH = Math.min(sliceHeightPx, canvas.height - srcY);
-
-                        var sliceCanvas = document.createElement('canvas');
-                        sliceCanvas.width = canvas.width;
-                        sliceCanvas.height = srcH;
-                        sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-
-                        var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-                        var sliceH = (srcH / pxPerMm);
-                        pdf.addImage(sliceData, 'JPEG', margin, margin, contentWidth, sliceH);
-                    }
-                }
-
-                pdf.save('MI-Survey-Report.pdf');
-                btn.prop('disabled', false).text(origText);
-            }).catch(function() {
-                clearTimeout(timeout);
-                if (!timedOut) {
-                    if (clone.parentNode) {
-                        document.body.removeChild(clone);
-                    }
-                    btn.prop('disabled', false).text(origText);
-                }
-            });
+            }
         });
     });
 
