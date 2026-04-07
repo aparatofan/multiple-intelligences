@@ -203,7 +203,7 @@
 
             var item = $('<div class="mi-description-item"></div>');
             var header = $('<div class="mi-description-header"></div>');
-            header.append('<img class="mi-description-icon" src="' + iconUrl + '" alt="" loading="lazy">');
+            header.append('<img class="mi-description-icon" src="' + iconUrl + '" alt="" loading="lazy" crossorigin="anonymous">');
             header.append(
                 '<div>' +
                 '<h3 class="mi-description-title">' + escapeHtml(label) + '</h3>' +
@@ -345,14 +345,30 @@
             }
         }
 
-        // Remove all <img> that still point to external URLs.
-        // Cross-origin icons cannot be drawn to canvas (CORS taint) and cause
-        // html2canvas to hang. Iterate in reverse since the NodeList is live.
+        // Convert external icon images to inline data URIs.
+        // With CORS headers on the server and crossorigin="anonymous" on the
+        // original <img>, the browser allows reading pixel data via canvas.
+        // Iterate in reverse since the NodeList is live.
         var imgs = clone.querySelectorAll('img');
+        var sourceImgs = source.querySelectorAll('img');
         for (var i = imgs.length - 1; i >= 0; i--) {
             var imgSrc = imgs[i].getAttribute('src') || '';
-            // Keep only data-URI images (like the chart we just converted).
-            if (imgSrc.indexOf('data:') !== 0) {
+            if (imgSrc.indexOf('data:') === 0) {
+                continue; // already a data URI (e.g. the chart)
+            }
+            try {
+                var origImg = sourceImgs[i];
+                if (origImg && origImg.complete && origImg.naturalWidth > 0) {
+                    var c = document.createElement('canvas');
+                    c.width = origImg.naturalWidth;
+                    c.height = origImg.naturalHeight;
+                    c.getContext('2d').drawImage(origImg, 0, 0);
+                    imgs[i].src = c.toDataURL('image/png');
+                } else {
+                    imgs[i].parentNode.removeChild(imgs[i]);
+                }
+            } catch (e) {
+                // CORS still blocked — remove the image so html2canvas won't hang.
                 imgs[i].parentNode.removeChild(imgs[i]);
             }
         }
