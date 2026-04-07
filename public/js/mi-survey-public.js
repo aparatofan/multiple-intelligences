@@ -348,7 +348,8 @@
         // Convert external icon images to inline data URIs.
         // With CORS headers on the server and crossorigin="anonymous" on the
         // original <img>, the browser allows reading pixel data via canvas.
-        // Iterate in reverse since the NodeList is live.
+        // SVG icons have no intrinsic pixel size, so we draw them at 150x150
+        // to match the CSS display size. Iterate in reverse since the NodeList is live.
         var imgs = clone.querySelectorAll('img');
         var sourceImgs = source.querySelectorAll('img');
         for (var i = imgs.length - 1; i >= 0; i--) {
@@ -359,11 +360,18 @@
             try {
                 var origImg = sourceImgs[i];
                 if (origImg && origImg.complete && origImg.naturalWidth > 0) {
+                    var drawW = 150;
+                    var drawH = 150;
                     var c = document.createElement('canvas');
-                    c.width = origImg.naturalWidth;
-                    c.height = origImg.naturalHeight;
-                    c.getContext('2d').drawImage(origImg, 0, 0);
+                    c.width = drawW * 2;  // 2x for retina sharpness
+                    c.height = drawH * 2;
+                    var cx = c.getContext('2d');
+                    cx.drawImage(origImg, 0, 0, c.width, c.height);
                     imgs[i].src = c.toDataURL('image/png');
+                    // Force explicit inline dimensions so html2canvas sizes them correctly.
+                    imgs[i].style.width = drawW + 'px';
+                    imgs[i].style.height = drawH + 'px';
+                    imgs[i].removeAttribute('loading');
                 } else {
                     imgs[i].parentNode.removeChild(imgs[i]);
                 }
