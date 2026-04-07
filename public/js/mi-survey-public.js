@@ -103,8 +103,8 @@
 
         var lang = data.language;
         var titleText = lang === 'pl'
-            ? 'Profil Inteligencji Wielorakich'
-            : 'Multiple Intelligences Profile';
+            ? data.userName + ', to jest twój Profil Inteligencji Wielorakich'
+            : data.userName + ', this is your Profile of Multiple Intelligences';
         var dateLabel = lang === 'pl' ? 'Data ankiety' : 'Survey date';
         var dynamicNote = lang === 'pl'
             ? 'Profil MI jest dynamiczny. Zmienia się w czasie.'
