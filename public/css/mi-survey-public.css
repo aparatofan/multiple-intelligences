@@ -272,22 +272,22 @@
 }
 
 .mi-description-icon {
-    width: 40px;
-    height: 40px;
+    width: 150px;
+    height: 150px;
     flex-shrink: 0;
 }
 
 .mi-description-title {
-    font-size: 1.15em;
+    font-size: 1.55em;
     font-weight: 700;
-    color: #333;
+    color: #E8A317;
     margin: 0;
 }
 
 .mi-description-score {
     color: #e8a317;
     font-weight: 700;
-    font-size: 0.9em;
+    font-size: 1.25em;
 }
 
 .mi-description-item p {
